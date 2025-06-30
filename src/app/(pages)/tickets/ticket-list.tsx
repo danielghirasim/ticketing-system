@@ -1,4 +1,5 @@
 import { Ticket } from '@/types/types';
+import Link from 'next/link';
 
 type TicketListProps = {
   tickets: Ticket[];
@@ -17,7 +18,9 @@ export function TicketList({ tickets }: TicketListProps) {
         {tickets.map((ticket) => (
           <tr key={ticket.id}>
             <td>{ticket.id}</td>
-            <td>{ticket.title}</td>
+            <td>
+              <Link href={`/tickets/details/${ticket.id}`}>{ticket.title}</Link>
+            </td>
             <td>{ticket.status}</td>
           </tr>
         ))}

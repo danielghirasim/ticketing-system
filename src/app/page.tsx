@@ -1,9 +1,14 @@
-import Link from 'next/link';
+import Login from '@/components/login';
 
-export default async function Home() {
-  return (
-    <div>
-      <Link href="/login">Go To login page</Link>
-    </div>
-  );
+type LoginPageProps = {
+  searchParams: Promise<{
+    [key: string]: string | string[] | undefined;
+  }>;
+};
+
+export default async function Home({ searchParams }: LoginPageProps) {
+  const sp = await searchParams;
+
+  const wantsMagikLink = sp.magicLink === 'yes';
+  return <Login isPasswordLogin={!wantsMagikLink} />;
 }

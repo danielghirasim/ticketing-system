@@ -1,8 +1,9 @@
-import { getSupabaseCookiesUtilClient } from "@/utils/supabase/cookiesUtilClient";
+import Link from 'next/link';
 
 export default async function Home() {
-  const supabase = await getSupabaseCookiesUtilClient();
-  const buckets = await supabase.storage.listBuckets();
-
-  return <div>{JSON.stringify(buckets, null, 2)}</div>;
+  return (
+    <div>
+      <Link href="/login">Go To login page</Link>
+    </div>
+  );
 }

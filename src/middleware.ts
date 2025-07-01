@@ -9,10 +9,12 @@ export const config = {
 export async function middleware(request: NextRequest) {
   const { supabase, response } = getSupabaseReqResClient({ request });
   const user = await supabase.auth.getUser();
+  const session = await supabase.auth.getSession();
 
   const requestedPath = request.nextUrl.pathname;
-  console.log(requestedPath);
   const actualUser = user.data?.user;
+  console.log(session);
+  console.log(`Actual user: ${actualUser}`);
 
   if (requestedPath.startsWith('/tickets')) {
     if (!actualUser) {

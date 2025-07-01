@@ -15,8 +15,11 @@ export default function Login({ isPasswordLogin }: LoginProps) {
 
   return (
     <form
+      action={isPasswordLogin ? 'auth/pw-login' : 'auth/magic-link'}
+      method="post"
       onSubmit={(event) => {
-        event.preventDefault();
+        if (isPasswordLogin) event.preventDefault();
+
         if (isPasswordLogin) {
           supabase.auth
             .signInWithPassword({
@@ -30,12 +33,10 @@ export default function Login({ isPasswordLogin }: LoginProps) {
                 alert('Could not sign in');
               }
             });
-        } else {
-          alert('User wants to login with magic link');
-        }
 
-        setEmail('');
-        setPass('');
+          setEmail('');
+          setPass('');
+        }
       }}
     >
       <article style={{ maxWidth: '480px', margin: 'auto' }}>
@@ -54,11 +55,11 @@ export default function Login({ isPasswordLogin }: LoginProps) {
 
           <p>
             {isPasswordLogin ? (
-              <Link href={{ pathname: '/login', query: { magicLink: 'yes' } }}>Go to Magic Link</Link>
+              <Link href={{ pathname: '/', query: { magicLink: 'yes' } }}>Go to Magic Link</Link>
             ) : (
               <Link
                 href={{
-                  pathname: '/login',
+                  pathname: '/',
                   query: { magicLink: 'no' },
                 }}
               >

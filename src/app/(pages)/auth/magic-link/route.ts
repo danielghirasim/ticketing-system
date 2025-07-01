@@ -1,19 +1,41 @@
-import { getSupabaseCookiesUtilClient } from '@/utils/supabase/cookiesUtilClient';
+import { getSupabaseAdminClient } from '@/utils/supabase/adminClient';
 import { NextRequest, NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const email = formData.get('email') as string;
-  const supabase = await getSupabaseCookiesUtilClient();
-  const { error } = await supabase.auth.signInWithOtp({
+  const supabaseAdmin = getSupabaseAdminClient();
+
+  const { data: linkData, error } = await supabaseAdmin.auth.admin.generateLink({
     email,
-    options: {
-      emailRedirectTo: 'http://localhost:3000/',
-    },
+    type: 'magiclink',
   });
 
   if (error) {
     return NextResponse.redirect(new URL('/error?type=magic-link', request.url), 302);
   }
+
+  console.log(linkData);
+
+  const { hashed_token } = linkData.properties;
+  const constructedLink = new URL(`/auth/verify?hashed_token=${hashed_token}`, request.url);
+
+  const transporter = nodemailer.createTransport({
+    host: 'localhost',
+    port: 54325,
+  });
+
+  await transporter.sendMail({
+    from: 'Your Company <your@mail.whatever>',
+    to: email,
+    subject: 'Magic Link',
+    html: `
+      <h1>Hi there, this is a custom magic link email!</h1>
+      <p>Click <a href="${constructedLink.toString()}">here</a> to log
+      in.</p>
+      `,
+  });
+
   return NextResponse.redirect(new URL('/magic-thanks', request.url), 302);
 }

@@ -1,6 +1,7 @@
 'use client';
+
 import { getSupabaseBrowserClient } from '@/utils/supabase/browserClient';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -12,6 +13,18 @@ export default function Login({ isPasswordLogin }: LoginProps) {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        router.push('/tickets');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router, supabase.auth]);
 
   return (
     <form
@@ -27,11 +40,7 @@ export default function Login({ isPasswordLogin }: LoginProps) {
               password: pass,
             })
             .then((result) => {
-              if (result.data?.user) {
-                router.push('/tickets');
-              } else {
-                alert('Could not sign in');
-              }
+              !result.data?.user && alert('Could not sign in');
             });
 
           setEmail('');

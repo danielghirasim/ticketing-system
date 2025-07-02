@@ -6,36 +6,38 @@ export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const email = formData.get('email') as string;
   const supabaseAdmin = getSupabaseAdminClient();
+  const type = formData.get('type') === 'recovery' ? 'recovery' : 'magiclink';
 
   const { data: linkData, error } = await supabaseAdmin.auth.admin.generateLink({
     email,
-    type: 'magiclink',
+    type,
   });
 
   if (error) {
-    return NextResponse.redirect(new URL('/error?type=magic-link', request.url), 302);
+    return NextResponse.redirect(new URL(`/error?type=${type}`, request.url), 302);
   }
 
-  console.log(linkData);
-
   const { hashed_token } = linkData.properties;
-  const constructedLink = new URL(`/auth/verify?hashed_token=${hashed_token}`, request.url);
+  const constructedLink = new URL(`/auth/verify?hashed_token=${hashed_token}&type=${type}`, request.url);
 
   const transporter = nodemailer.createTransport({
     host: 'localhost',
     port: 54325,
   });
 
+  const initialSentence = type === 'recovery' ? 'Hi there, you requested a password change!' : 'Hi there, this is a custom magic link email!';
+  const secondSentenceEnding = type === 'recovery' ? 'change it' : 'log in';
+
   await transporter.sendMail({
     from: 'Your Company <your@mail.whatever>',
     to: email,
     subject: 'Magic Link',
     html: `
-      <h1>Hi there, this is a custom magic link email!</h1>
-      <p>Click <a href="${constructedLink.toString()}">here</a> to log
-      in.</p>
-      `,
+    <h1>${initialSentence}</h1>
+    <p>Click <a href="${constructedLink.toString()}">here</a> to ${secondSentenceEnding}.</p>
+    `,
   });
 
-  return NextResponse.redirect(new URL('/magic-thanks', request.url), 302);
+  const thanksUrl = new URL(`/magic-thanks?type=${type}`, request.url);
+  return NextResponse.redirect(thanksUrl, 302);
 }

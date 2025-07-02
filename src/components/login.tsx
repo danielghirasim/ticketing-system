@@ -4,15 +4,19 @@ import { getSupabaseBrowserClient } from '@/utils/supabase/browserClient';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { FORM_TYPES } from '@/types/formTypes';
 
-type LoginProps = {
-  isPasswordLogin: boolean;
-};
-export default function Login({ isPasswordLogin }: LoginProps) {
+export default function Login({ formType = 'pw-login' }) {
   const supabase = getSupabaseBrowserClient();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
+
+  const isPasswordRecovery = formType === FORM_TYPES.PASSWORD_RECOVERY;
+  const isPasswordLogin = formType === FORM_TYPES.PASSWORD_LOGIN;
+  const isMagicLinkLogin = formType === FORM_TYPES.MAGIC_LINK;
+
+  const formAction = isPasswordLogin ? '/auth/pw-login' : '/auth/magic-link';
 
   useEffect(() => {
     const {
@@ -28,10 +32,10 @@ export default function Login({ isPasswordLogin }: LoginProps) {
 
   return (
     <form
-      action={isPasswordLogin ? 'auth/pw-login' : 'auth/magic-link'}
-      method="post"
+      method="POST"
+      action={formAction}
       onSubmit={(event) => {
-        if (isPasswordLogin) event.preventDefault();
+        isPasswordLogin && event.preventDefault();
 
         if (isPasswordLogin) {
           supabase.auth
@@ -48,8 +52,13 @@ export default function Login({ isPasswordLogin }: LoginProps) {
         }
       }}
     >
+      {isPasswordRecovery && <input type="hidden" name="type" value="recovery" />}
+
       <article style={{ maxWidth: '480px', margin: 'auto' }}>
-        <header>Login</header>
+        <header>
+          {isPasswordRecovery && <strong>Request new password</strong>}
+          {!isPasswordRecovery && <strong>Login</strong>}
+        </header>
 
         <fieldset>
           <label htmlFor="email">Email</label>
@@ -61,27 +70,63 @@ export default function Login({ isPasswordLogin }: LoginProps) {
               <input type="password" id="password" name="password" value={pass} onChange={(e) => setPass(e.target.value)} />
             </label>
           )}
-
-          <p>
-            {isPasswordLogin ? (
-              <Link href={{ pathname: '/', query: { magicLink: 'yes' } }}>Go to Magic Link</Link>
-            ) : (
-              <Link
-                href={{
-                  pathname: '/',
-                  query: { magicLink: 'no' },
-                }}
-              >
-                Go to Password Login
-              </Link>
-            )}
-          </p>
         </fieldset>
 
         <button type="submit">
-          Sign in with
-          {isPasswordLogin ? ' Password' : ' Magic Link'}
+          {isPasswordLogin && 'Sign in with Password'}
+          {isPasswordRecovery && 'Request new password'}
+          {isMagicLinkLogin && 'Sign in with Magic Link'}
         </button>
+
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            flexDirection: 'column',
+            gap: '6px',
+            marginBottom: '20px',
+          }}
+        >
+          {!isPasswordLogin && (
+            <Link
+              role="button"
+              className="contrast"
+              href={{
+                pathname: '/',
+                query: { magicLink: 'no' },
+              }}
+            >
+              Go to Password Login
+            </Link>
+          )}
+          {!isMagicLinkLogin && (
+            <Link
+              role="button"
+              className="contrast"
+              href={{
+                pathname: '/',
+                query: { magicLink: 'yes' },
+              }}
+            >
+              Go to Magic Link Login
+            </Link>
+          )}
+        </div>
+
+        {!isPasswordRecovery && (
+          <Link
+            href={{
+              pathname: '/',
+              query: { passwordRecovery: 'yes' },
+            }}
+            style={{
+              textAlign: 'center',
+              display: 'block',
+            }}
+          >
+            Go to Password Recovery
+          </Link>
+        )}
       </article>
     </form>
   );

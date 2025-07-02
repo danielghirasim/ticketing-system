@@ -1,8 +1,17 @@
 import Link from 'next/link';
-export default function MagicLinkSuccessPage() {
+
+type MagicLinkSuccessPageProps = {
+  searchParams: {
+    type: string;
+  };
+};
+
+export default async function MagicLinkSuccessPage({ searchParams }: MagicLinkSuccessPageProps) {
+  const { type } = await searchParams;
+
   return (
     <div style={{ textAlign: 'center' }}>
-      <h1>Magic on its way!</h1>
+      <h1>{type === 'magiclink' ? 'Magic on its way!' : "Password Reset link is on it's way"}</h1>
       Thanks! You should get a link to login in a few seconds.
       <br />
       <br />

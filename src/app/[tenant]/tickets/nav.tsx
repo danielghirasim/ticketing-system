@@ -40,7 +40,7 @@ export default function Nav({ tenant }: { tenant: string }) {
           </Link>
         </li>
         <li>
-          <Link role="button" href={urlPath('/tickets/users', tenant)} {...(pathname === urlPath('/tickets/users', 'users') ? activeProps : inactiveProps)}>
+          <Link role="button" href={urlPath('/tickets/users', tenant)} {...(pathname === urlPath('/tickets/users', tenant) ? activeProps : inactiveProps)}>
             User List
           </Link>
         </li>

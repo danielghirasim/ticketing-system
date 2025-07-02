@@ -1,11 +1,17 @@
 'use client';
 
 import { getSupabaseBrowserClient } from '@/utils/supabase/browserClient';
+import { urlPath } from '@/utils/url-helpers';
+import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function ChangePasswordPage() {
   const [pass, setPass] = useState('');
+  const router = useRouter();
+  const params = useParams();
   const supabase = getSupabaseBrowserClient();
+
+  const tenant = params.tenant as string;
 
   return (
     <form
@@ -19,6 +25,7 @@ export default function ChangePasswordPage() {
           } else {
             alert('Password updated!');
             setPass('');
+            router.push(urlPath('/tickets', tenant));
           }
         });
       }}

@@ -11,6 +11,7 @@ type MagicLinkSuccessPageProps = {
 };
 
 export default async function MagicLinkSuccessPage({ searchParams, params }: MagicLinkSuccessPageProps) {
+  const { tenant } = await params;
   const { type } = await searchParams;
 
   return (
@@ -19,7 +20,7 @@ export default async function MagicLinkSuccessPage({ searchParams, params }: Mag
       Thanks! You should get a link to login in a few seconds.
       <br />
       <br />
-      <Link role="button" href={urlPath('/', params.tenant)}>
+      <Link role="button" href={urlPath('/', tenant)}>
         Go back.
       </Link>
     </div>

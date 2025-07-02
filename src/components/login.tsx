@@ -19,19 +19,21 @@ export default function Login({ formType = 'pw-login', tenant, tenantName }: { f
   const isPasswordLogin = formType === FORM_TYPES.PASSWORD_LOGIN;
   const isMagicLinkLogin = formType === FORM_TYPES.MAGIC_LINK;
 
-  const formAction = isPasswordLogin ? '/auth/pw-login' : '/auth/magic-link';
+  const getPath = (subPath: string) => urlPath(subPath ?? '', tenant);
+
+  const formAction = getPath(isPasswordLogin ? '/auth/pw-login' : '/auth/magic-link');
 
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        router.push(urlPath('/tickets', tenant));
+        router.push(getPath('/tickets'));
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [router, supabase.auth]);
+  }, [router, supabase.auth, getPath]);
 
   return (
     <form
@@ -96,7 +98,7 @@ export default function Login({ formType = 'pw-login', tenant, tenantName }: { f
               role="button"
               className="contrast"
               href={{
-                pathname: urlPath('/', tenant),
+                pathname: getPath('/'),
                 query: { magicLink: 'no' },
               }}
             >
@@ -108,7 +110,7 @@ export default function Login({ formType = 'pw-login', tenant, tenantName }: { f
               role="button"
               className="contrast"
               href={{
-                pathname: urlPath('/', tenant),
+                pathname: getPath('/'),
                 query: { magicLink: 'yes' },
               }}
             >
@@ -120,7 +122,7 @@ export default function Login({ formType = 'pw-login', tenant, tenantName }: { f
         {!isPasswordRecovery && (
           <Link
             href={{
-              pathname: urlPath('/', tenant),
+              pathname: getPath('/'),
               query: { passwordRecovery: 'yes' },
             }}
             style={{

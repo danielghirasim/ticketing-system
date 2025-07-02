@@ -1,12 +1,16 @@
+import { urlPath } from '@/utils/url-helpers';
 import Link from 'next/link';
 
 type MagicLinkSuccessPageProps = {
   searchParams: {
     type: string;
   };
+  params: {
+    tenant: string;
+  };
 };
 
-export default async function MagicLinkSuccessPage({ searchParams }: MagicLinkSuccessPageProps) {
+export default async function MagicLinkSuccessPage({ searchParams, params }: MagicLinkSuccessPageProps) {
   const { type } = await searchParams;
 
   return (
@@ -15,7 +19,7 @@ export default async function MagicLinkSuccessPage({ searchParams }: MagicLinkSu
       Thanks! You should get a link to login in a few seconds.
       <br />
       <br />
-      <Link role="button" href="/">
+      <Link role="button" href={urlPath('/', params.tenant)}>
         Go back.
       </Link>
     </div>

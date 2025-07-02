@@ -1,3 +1,4 @@
+import { urlPath } from '@/utils/url-helpers';
 import Link from 'next/link';
 
 type KnownErrors = 'login-failed' | 'magic-link' | 'invalid_magic-link' | 'recovery';
@@ -6,9 +7,12 @@ type ErrorPageProps = {
   searchParams: Promise<{
     type?: string;
   }>;
+  params: {
+    tenant: string;
+  };
 };
 
-export default async function ErrorPage({ searchParams }: ErrorPageProps) {
+export default async function ErrorPage({ searchParams, params }: ErrorPageProps) {
   const { type } = await searchParams;
 
   const knownErrors: KnownErrors[] = ['login-failed', 'magic-link', 'invalid_magic-link', 'recovery'];
@@ -23,7 +27,7 @@ export default async function ErrorPage({ searchParams }: ErrorPageProps) {
       {type && !knownErrors.includes(type as KnownErrors) && <strong>Something went wrong. Please try again or contact support.</strong>}
       <br />
       <br />
-      <Link role="button" href="/">
+      <Link role="button" href={urlPath('/', params.tenant)}>
         Go back.
       </Link>
     </div>

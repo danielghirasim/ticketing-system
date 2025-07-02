@@ -5,8 +5,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FORM_TYPES } from '@/types/formTypes';
+import { urlPath } from '@/utils/url-helpers';
 
-export default function Login({ formType = 'pw-login' }) {
+type FormType = (typeof FORM_TYPES)[keyof typeof FORM_TYPES];
+
+export default function Login({ formType = 'pw-login', tenant, tenantName }: { formType: FormType; tenant: string; tenantName: string }) {
   const supabase = getSupabaseBrowserClient();
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -23,7 +26,7 @@ export default function Login({ formType = 'pw-login' }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        router.push('/tickets');
+        router.push(urlPath('/tickets', tenant));
       }
     });
 
@@ -58,6 +61,7 @@ export default function Login({ formType = 'pw-login' }) {
         <header>
           {isPasswordRecovery && <strong>Request new password</strong>}
           {!isPasswordRecovery && <strong>Login</strong>}
+          <div style={{ display: 'block', fontSize: '0.7em' }}>{tenantName}</div>
         </header>
 
         <fieldset>
@@ -92,7 +96,7 @@ export default function Login({ formType = 'pw-login' }) {
               role="button"
               className="contrast"
               href={{
-                pathname: '/',
+                pathname: urlPath('/', tenant),
                 query: { magicLink: 'no' },
               }}
             >
@@ -104,7 +108,7 @@ export default function Login({ formType = 'pw-login' }) {
               role="button"
               className="contrast"
               href={{
-                pathname: '/',
+                pathname: urlPath('/', tenant),
                 query: { magicLink: 'yes' },
               }}
             >
@@ -116,7 +120,7 @@ export default function Login({ formType = 'pw-login' }) {
         {!isPasswordRecovery && (
           <Link
             href={{
-              pathname: '/',
+              pathname: urlPath('/', tenant),
               query: { passwordRecovery: 'yes' },
             }}
             style={{

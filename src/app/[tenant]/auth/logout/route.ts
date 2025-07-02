@@ -1,8 +1,10 @@
 import { getSupabaseCookiesUtilClient } from '@/utils/supabase/cookiesUtilClient';
+import { buildUrl } from '@/utils/url-helpers';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest, { params }: { params: { tenant: string } }) {
   const supabase = await getSupabaseCookiesUtilClient();
   await supabase.auth.signOut();
-  return NextResponse.redirect(new URL('/', request.url));
+
+  return NextResponse.redirect(buildUrl('/', params.tenant, request));
 }

@@ -1,8 +1,9 @@
 import { getSupabaseCookiesUtilClient } from '@/utils/supabase/cookiesUtilClient';
+import { buildUrl } from '@/utils/url-helpers';
 import { EmailOtpType } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest, { params }: { params: { tenant: string } }) {
   const { searchParams } = new URL(request.url);
   const supabase = await getSupabaseCookiesUtilClient();
   const hashed_token = searchParams.get('hashed_token');
@@ -19,12 +20,12 @@ export async function GET(request: NextRequest) {
   });
 
   if (error) {
-    return NextResponse.redirect(new URL(`/error?type=invalid_magic-link`, request.url));
+    return NextResponse.redirect(buildUrl(`/error?type=invalid_magic-link`, params.tenant, request));
   } else {
     if (isRecovery) {
-      return NextResponse.redirect(new URL('/tickets/change-password', request.url));
+      return NextResponse.redirect(buildUrl('/tickets/change-password', params.tenant, request));
     } else {
-      return NextResponse.redirect(new URL('/tickets', request.url));
+      return NextResponse.redirect(buildUrl('/tickets', params.tenant, request));
     }
   }
 }

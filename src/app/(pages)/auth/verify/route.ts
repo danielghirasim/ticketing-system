@@ -18,8 +18,6 @@ export async function GET(request: NextRequest) {
     token_hash: hashed_token,
   });
 
-  console.log(error);
-
   if (error) {
     return NextResponse.redirect(new URL(`/error?type=invalid_magic-link`, request.url));
   } else {

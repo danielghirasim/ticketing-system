@@ -10,6 +10,7 @@
     "lint": "next lint",
     "sb:start": "npx supabase start ticket-system",
     "sb:stop": "npx supabase stop ticket-system",
+    "sb:backup": "npx supabase db dump --local --data-only --file=supabase/seed.sql && npx supabase db diff --local -f initial_structure",
     "sb:gen": "npx supabase gen types typescript --local --schema public > src/types/supabase.ts"
   },
   "dependencies": {
@@ -29,7 +30,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
-    "supabase": "^2.30.4",
+    "supabase": "^2.26.9",
     "typescript": "^5"
   }
 }

@@ -18,6 +18,8 @@ export async function middleware(request: NextRequest) {
   if (applicationPath.startsWith('/tickets')) {
     if (!actualUser) {
       return NextResponse.redirect(new URL(`/${tenant}/`, request.url));
+    } else if (!actualUser.app_metadata?.tenants.includes(tenant)) {
+      return NextResponse.rewrite(new URL('/not-found', request.url));
     }
   } else if (applicationPath === '/') {
     if (actualUser) {

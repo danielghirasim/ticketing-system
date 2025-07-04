@@ -13,7 +13,7 @@ export default async function TicketsLayout({ children, params }: TicketLayoutPr
   return (
     <>
       <section style={{ borderBottom: '1px solid gray' }}>
-        <TenantName tenantName={tenant} />
+        <TenantName tenant={tenant} />
         <Nav tenant={tenant} />
       </section>
       <section>{children}</section>

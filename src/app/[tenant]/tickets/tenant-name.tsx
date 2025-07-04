@@ -1,7 +1,16 @@
+import { getSupabaseCookiesUtilClient } from '@/utils/supabase/cookiesUtilClient';
+
 type TenantNameProps = {
-  tenantName: string;
+  tenant: string;
 };
-export default function TenantName({ tenantName }: TenantNameProps) {
+export default async function TenantName({ tenant }: TenantNameProps) {
+  let tenantName = 'Unknown';
+  const supabase = await getSupabaseCookiesUtilClient();
+  const selection = await supabase.from('tenants').select('name').eq('id', tenant).single();
+
+  const { data } = selection;
+  tenantName = data?.name ?? tenantName;
+
   return (
     <header style={{ marginBottom: '10px' }}>
       <div

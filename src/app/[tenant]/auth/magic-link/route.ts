@@ -11,14 +11,13 @@ export async function POST(request: NextRequest, { params }: { params: { tenant:
   const type = formData.get('type') === 'recovery' ? 'recovery' : 'magiclink';
 
   const tenantUrl = (path: string) => buildUrl(path, tenant, request);
-  console.log(`tenant from magic thingie: ${tenant}`);
 
   const { data: linkData, error } = await supabaseAdmin.auth.admin.generateLink({
     email,
     type,
   });
 
-  if (error) {
+  if (error || !linkData.user.app_metadata.tenants.includes(tenant)) {
     return NextResponse.redirect(tenantUrl(`/error?type=${type}`), 302);
   }
 

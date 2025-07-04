@@ -1,7 +1,7 @@
 'use client';
 
 import { getSupabaseBrowserClient } from '@/utils/supabase/browserClient';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FORM_TYPES } from '@/types/formTypes';
@@ -19,21 +19,26 @@ export default function Login({ formType = 'pw-login', tenant, tenantName }: { f
   const isPasswordLogin = formType === FORM_TYPES.PASSWORD_LOGIN;
   const isMagicLinkLogin = formType === FORM_TYPES.MAGIC_LINK;
 
-  const getPath = (subPath: string) => urlPath(subPath ?? '', tenant);
+  const getPath = useCallback((subPath: string) => urlPath(subPath ?? '', tenant), [tenant]);
 
   const formAction = getPath(isPasswordLogin ? '/auth/pw-login' : '/auth/magic-link');
 
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
+        if (!session?.user.app_metadata.tenants.includes(tenant)) {
+          supabase.auth.signOut();
+          alert('Could not sign in! Tenant does not match!');
+          return;
+        }
         router.push(getPath('/tickets'));
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [router, supabase.auth, getPath]);
+  }, [router, supabase.auth, getPath, tenant]);
 
   return (
     <form

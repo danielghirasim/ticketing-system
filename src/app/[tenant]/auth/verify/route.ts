@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest, { params }: { params: { tenant: string } }) {
   const { searchParams } = new URL(request.url);
+  const { tenant } = await params;
   const supabase = await getSupabaseCookiesUtilClient();
   const hashed_token = searchParams.get('hashed_token');
   const isRecovery = searchParams.get('type') === 'recovery';
@@ -20,12 +21,12 @@ export async function GET(request: NextRequest, { params }: { params: { tenant: 
   });
 
   if (error) {
-    return NextResponse.redirect(buildUrl(`/error?type=invalid_magic-link`, params.tenant, request));
+    return NextResponse.redirect(buildUrl(`/error?type=invalid_magic-link`, tenant, request));
   } else {
     if (isRecovery) {
-      return NextResponse.redirect(buildUrl('/tickets/change-password', params.tenant, request));
+      return NextResponse.redirect(buildUrl('/tickets/change-password', tenant, request));
     } else {
-      return NextResponse.redirect(buildUrl('/tickets', params.tenant, request));
+      return NextResponse.redirect(buildUrl('/tickets', tenant, request));
     }
   }
 }

@@ -14,6 +14,7 @@ type ErrorPageProps = {
 
 export default async function ErrorPage({ searchParams, params }: ErrorPageProps) {
   const { type } = await searchParams;
+  const { tenant } = await params;
 
   const knownErrors: KnownErrors[] = ['login-failed', 'magic-link', 'invalid_magic-link', 'recovery'];
 
@@ -27,7 +28,7 @@ export default async function ErrorPage({ searchParams, params }: ErrorPageProps
       {type && !knownErrors.includes(type as KnownErrors) && <strong>Something went wrong. Please try again or contact support.</strong>}
       <br />
       <br />
-      <Link role="button" href={urlPath('/', params.tenant)}>
+      <Link role="button" href={urlPath('/', tenant)}>
         Go back.
       </Link>
     </div>

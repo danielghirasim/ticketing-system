@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseReqResClient } from './utils/supabase/reqResClient';
+import { TENANT_MAP } from './tenant-map';
+import { buildUrl, getHostnameAndPort } from './utils/url-helpers';
 
 export async function middleware(request: NextRequest) {
   const { supabase, response } = getSupabaseReqResClient({ request });
@@ -8,26 +10,39 @@ export async function middleware(request: NextRequest) {
   const requestedPath = request.nextUrl.pathname;
   const actualUser = user.data?.user;
 
-  const [tenant, ...restOfPath] = requestedPath.substr(1).split('/');
-  const applicationPath = '/' + restOfPath.join('/');
+  const [hostname] = getHostnameAndPort(request);
 
-  if (!/[a-z0-9-_]+/.test(tenant)) {
+  const tenant = TENANT_MAP[hostname as keyof typeof TENANT_MAP];
+  const applicationPath = requestedPath;
+
+  // Checks if tenant is valid from our hardcoded file
+  if (hostname in TENANT_MAP === false || !/[a-z0-9-_]+/.test(tenant)) {
     return NextResponse.rewrite(new URL('/not-found', request.url));
   }
 
   if (applicationPath.startsWith('/tickets')) {
     if (!actualUser) {
-      return NextResponse.redirect(new URL(`/${tenant}/`, request.url));
+      return NextResponse.redirect(buildUrl(`/`, tenant, request));
     } else if (!actualUser.app_metadata?.tenants.includes(tenant)) {
       return NextResponse.rewrite(new URL('/not-found', request.url));
     }
   } else if (applicationPath === '/') {
     if (actualUser) {
-      return NextResponse.redirect(new URL(`/${tenant}/tickets`, request.url));
+      return NextResponse.redirect(buildUrl('/tickets', tenant, request));
     }
   }
 
-  return response.value;
+  const rewrittenResponse = NextResponse.rewrite(new URL(`/${tenant}${applicationPath}${request.nextUrl.search}`, request.url), {
+    request,
+  });
+  // The new rewritten response doesn't have cookies so we have to set them
+  const cookiesToSet = response.value.cookies.getAll();
+
+  cookiesToSet.forEach(({ name, value }) => {
+    rewrittenResponse.cookies.set(name, value);
+  });
+
+  return rewrittenResponse;
 }
 
 export const config = {

@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseReqResClient } from './utils/supabase/reqResClient';
-import { TENANT_MAP } from './tenant-map';
 import { buildUrl, getHostnameAndPort } from './utils/url-helpers';
+import { getSupabaseAdminClient } from './utils/supabase/adminClient';
 
 export async function middleware(request: NextRequest) {
   const { supabase, response } = getSupabaseReqResClient({ request });
   const user = await supabase.auth.getUser();
-
+  const [hostname] = getHostnameAndPort(request);
   const requestedPath = request.nextUrl.pathname;
   const actualUser = user.data?.user;
 
-  const [hostname] = getHostnameAndPort(request);
+  const supabaseAdmin = getSupabaseAdminClient();
+  const { data: tenantData, error: tenantError } = await supabaseAdmin.from('tenants').select('*').eq('domain', hostname).single();
 
-  const tenant = TENANT_MAP[hostname as keyof typeof TENANT_MAP];
+  const tenant = tenantData.id;
   const applicationPath = requestedPath;
 
   // Checks if tenant is valid from our hardcoded file
-  if (hostname in TENANT_MAP === false || !/[a-z0-9-_]+/.test(tenant)) {
+  if (tenantError || !/[a-z0-9-_]+/.test(tenant)) {
     return NextResponse.rewrite(new URL('/not-found', request.url));
   }
 
@@ -37,7 +38,6 @@ export async function middleware(request: NextRequest) {
   });
   // The new rewritten response doesn't have cookies so we have to set them
   const cookiesToSet = response.value.cookies.getAll();
-
   cookiesToSet.forEach(({ name, value }) => {
     rewrittenResponse.cookies.set(name, value);
   });

@@ -7,7 +7,14 @@ export function urlPath(applicationPath: string, tenant: string) {
 
 export function getHostnameAndPort(request: NextRequest) {
   const hostnameWithPort = request.headers.get('host')!;
-  const [hostname, port] = hostnameWithPort.split(':');
+  const [realHostname, port] = hostnameWithPort.split(':');
+
+  let hostname;
+  if (process.env.OVERRIDE_TENANT_DOMAIN) {
+    hostname = process.env.OVERRIDE_TENANT_DOMAIN;
+  } else {
+    hostname = realHostname;
+  }
   return [hostname, port];
 }
 
@@ -17,6 +24,5 @@ export function buildUrl(applicationPath: string, tenant: string, request: NextR
   const portSuffix = port && port != '443' ? `:${port}` : '';
   const { protocol } = request.nextUrl;
   const tenantUrl = `${protocol}//${hostname}${portSuffix}/`;
-  console.log(tenantUrl);
   return new URL(urlPath(applicationPath, tenant), tenantUrl);
 }

@@ -9,7 +9,14 @@ import { urlPath } from '@/utils/url-helpers';
 
 type FormType = (typeof FORM_TYPES)[keyof typeof FORM_TYPES];
 
-export default function Login({ formType = 'pw-login', tenant, tenantName }: { formType: FormType; tenant: string; tenantName: string }) {
+type LoginProps = {
+  formType: FormType;
+  tenant: string;
+  tenantName: string;
+  tenantDomain: string;
+};
+
+export default function Login({ formType = 'pw-login', tenant, tenantName, tenantDomain }: LoginProps) {
   const supabase = getSupabaseBrowserClient();
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -82,6 +89,25 @@ export default function Login({ formType = 'pw-login', tenant, tenantName }: { f
             </label>
           )}
         </fieldset>
+
+        <button
+          type="button"
+          onClick={() => {
+            supabase.auth.signInWithOAuth({
+              provider: 'google',
+              options: {
+                redirectTo: window.location.origin + '/auth/verify-oauth',
+                queryParams: {
+                  access_type: 'offline',
+                  prompt: 'consent',
+                  hd: tenantDomain,
+                },
+              },
+            });
+          }}
+        >
+          Sign in with Google
+        </button>
 
         <button type="submit">
           {isPasswordLogin && 'Sign in with Password'}

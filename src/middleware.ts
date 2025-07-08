@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
   const supabaseAdmin = getSupabaseAdminClient();
   const { data: tenantData, error: tenantError } = await supabaseAdmin.from('tenants').select('*').eq('domain', hostname).single();
 
-  const tenant = tenantData.id;
+  const tenant = tenantData?.id;
   const applicationPath = requestedPath;
 
   // Checks if tenant is valid from our hardcoded file

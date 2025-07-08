@@ -17,6 +17,7 @@ export default async function LoginPage({ searchParams, params }: LoginPageProps
   const { tenant } = await params;
   const supabaseAdmin = getSupabaseAdminClient();
   const { data, error } = await supabaseAdmin.from('tenants').select('*').eq('id', tenant).single();
+  const { domain: tenantDomain } = data;
 
   if (error) notFound();
 
@@ -29,5 +30,5 @@ export default async function LoginPage({ searchParams, params }: LoginPageProps
   if (wantsMagicLink) formType = FORM_TYPES.MAGIC_LINK;
   if (wantsPasswordRecovery) formType = FORM_TYPES.PASSWORD_RECOVERY;
 
-  return <Login formType={formType} tenant={tenant} tenantName={tenantName} />;
+  return <Login formType={formType} tenant={tenant} tenantName={tenantName} tenantDomain={tenantDomain} />;
 }

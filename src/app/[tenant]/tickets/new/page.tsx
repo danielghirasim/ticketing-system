@@ -9,7 +9,7 @@ export default function CreateTicket() {
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          alert('TODO: Add a new ticket');
+          alert('TODO: Add a new ticket!');
         }}
       >
         <input ref={ticketTitleRef} placeholder="Add a title" />

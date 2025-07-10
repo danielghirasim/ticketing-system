@@ -13,17 +13,31 @@ export async function TicketList({ tenant, searchParams }: TicketListProps) {
   let page = 1;
   if (sp?.page && +sp.page > 1) page = +sp.page;
 
+  const supabase = await getSupabaseCookiesUtilClient();
+  let countStatement = supabase.from('tickets').select('*', { count: 'exact', head: true }).eq('tenant', tenant);
+
   const startingPoint = (page - 1) * 6;
 
-  const supabase = await getSupabaseCookiesUtilClient();
-  const { data: tickets, error: ticketsError } = await supabase
-    .from('tickets')
-    .select('*')
-    .eq('tenant', tenant)
+  let ticketsStatement = supabase.from('tickets').select().eq('tenant', tenant);
+
+  const searchValue = sp.search && String(sp?.search).trim();
+
+  if (searchValue) {
+    const cleanSearchString = searchValue.replaceAll('"', '').replaceAll('\\', '').replaceAll('%', '');
+    const postgrestSearchValue = '"%' + cleanSearchString + '%"';
+    const postgrestFilterString = `title.ilike.${postgrestSearchValue}` + `, description.ilike.${postgrestSearchValue}`;
+
+    countStatement = countStatement.or(postgrestFilterString);
+    ticketsStatement = ticketsStatement.or(postgrestFilterString);
+  }
+
+  ticketsStatement = ticketsStatement
     .order('status', { ascending: true })
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .range(startingPoint, startingPoint + 5);
-  const { count, error: countError } = await supabase.from('tickets').select('*', { count: 'exact', head: true }).eq('tenant', tenant);
+
+  const { count, error: countError } = await countStatement;
+  const { data: tickets, error: ticketsError } = await ticketsStatement;
 
   if (ticketsError || countError) {
     return <div>No tickets found</div>;
@@ -57,12 +71,12 @@ export async function TicketList({ tenant, searchParams }: TicketListProps) {
       </table>
       <div style={{ display: 'flex' }}>
         {page > 1 && (
-          <Link role="button" href={{ query: { page: page - 1 } }}>
+          <Link role="button" href={{ query: { page: page - 1, search: searchValue } }}>
             Previous page
           </Link>
         )}
         {moreRows && (
-          <Link style={{ marginLeft: 'auto' }} role="button" href={{ query: { page: page + 1 } }}>
+          <Link style={{ marginLeft: 'auto' }} role="button" href={{ query: { page: page + 1, search: searchValue } }}>
             Next page
           </Link>
         )}

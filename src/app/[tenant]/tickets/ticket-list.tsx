@@ -39,7 +39,7 @@ export async function TicketList({ tenant, searchParams }: TicketListProps) {
   const { count, error: countError } = await countStatement;
   const { data: tickets, error: ticketsError } = await ticketsStatement;
 
-  if (ticketsError || countError) {
+  if (ticketsError || countError || !tickets.length) {
     return <div>No tickets found</div>;
   }
 

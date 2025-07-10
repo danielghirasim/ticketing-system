@@ -87,15 +87,71 @@ export type Database = {
         }
         Relationships: []
       }
+      tickets: {
+        Row: {
+          author_name: string | null
+          created_at: string
+          created_by: number
+          description: string
+          id: number
+          status: Database["public"]["Enums"]["ticket_status"]
+          tenant: string
+          title: string
+        }
+        Insert: {
+          author_name?: string | null
+          created_at?: string
+          created_by: number
+          description: string
+          id?: number
+          status?: Database["public"]["Enums"]["ticket_status"]
+          tenant: string
+          title: string
+        }
+        Update: {
+          author_name?: string | null
+          created_at?: string
+          created_by?: number
+          description?: string
+          id?: number
+          status?: Database["public"]["Enums"]["ticket_status"]
+          tenant?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "service_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_tenant_fkey"
+            columns: ["tenant"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      custom_access_token_hook: {
+        Args: { event: Json }
+        Returns: Json
+      }
     }
     Enums: {
-      [_ in never]: never
+      ticket_status:
+        | "open"
+        | "in_progress"
+        | "canceled"
+        | "information_missing"
+        | "done"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -210,7 +266,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      ticket_status: [
+        "open",
+        "in_progress",
+        "canceled",
+        "information_missing",
+        "done",
+      ],
+    },
   },
 } as const
 

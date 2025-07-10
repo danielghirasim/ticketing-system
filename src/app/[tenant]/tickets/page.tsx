@@ -1,33 +1,21 @@
-import { Ticket } from '@/types/types';
+import { Suspense } from 'react';
 import { TicketList } from './ticket-list';
 
-const dummyTickets: Ticket[] = [
-  {
-    id: 1,
-    title: 'Write Supabase Book',
-    status: 'Not started',
-    author: 'Chayan',
-  },
-  {
-    id: 2,
-    title: 'Read more Packt Books',
-    status: 'In progress',
-    author: 'David',
-  },
-  {
-    id: 3,
-    title: 'Make videos for the YouTube Channel',
-    status: 'Done',
-    author: 'David',
-  },
-];
+export const dynamic = 'force-dynamic';
 
-export default async function TicketListPage({ params }: { params: { tenant: string } }) {
+type TicketListPageProps = {
+  params: { tenant: string };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function TicketListPage({ params, searchParams }: TicketListPageProps) {
   const { tenant } = await params;
   return (
     <>
       <h2>Ticket List</h2>
-      <TicketList tickets={dummyTickets} tenant={tenant} />
+      <Suspense fallback={<div aria-busy="true">Loading tickets...</div>} key={JSON.stringify(await searchParams)}>
+        <TicketList tenant={tenant} searchParams={searchParams} />
+      </Suspense>
     </>
   );
 }

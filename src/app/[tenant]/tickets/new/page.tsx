@@ -1,20 +1,58 @@
 'use client';
-import { useRef } from 'react';
+import { getSupabaseBrowserClient } from '@/utils/supabase/browserClient';
+import { urlPath } from '@/utils/url-helpers';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+
 export default function CreateTicket() {
-  const ticketTitleRef = useRef(null);
-  const ticketDescriptionRef = useRef(null);
+  const { tenant } = useParams<{ tenant: string }>();
+  const [isLoading, setIsLoading] = useState(false);
+  const supabase = getSupabaseBrowserClient();
+  const router = useRouter();
+  const ticketTitleRef = useRef<HTMLInputElement>(null);
+  const ticketDescriptionRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    router.prefetch(urlPath(`/tickets/details/[id]`, tenant));
+  }, [router, tenant]);
+
   return (
     <article>
       <h3>Create a new ticket</h3>
       <form
-        onSubmit={(event) => {
+        onSubmit={async (event) => {
           event.preventDefault();
-          alert('TODO: Add a new ticket!');
+          const title = ticketTitleRef.current?.value ?? '';
+          const description = ticketDescriptionRef.current?.value ?? '';
+
+          if (title.trim().length > 4 && description.trim().length > 9) {
+            setIsLoading(true);
+
+            supabase
+              .from('tickets')
+              .insert({ created_by: 0, title, description, tenant })
+              .select()
+              .single()
+              .then(({ error, data }) => {
+                if (error) {
+                  console.error(error);
+                  setIsLoading(false);
+                  alert('Could not create ticket');
+                } else {
+                  setIsLoading(false);
+                  router.push(urlPath(`/tickets/details/${data.id}`, tenant));
+                }
+              });
+          } else {
+            alert('A title must have at least 5 chars and a description must at least contain 10');
+          }
         }}
       >
-        <input ref={ticketTitleRef} placeholder="Add a title" />
-        <textarea ref={ticketDescriptionRef} placeholder="Add a comment" />
-        <button type="submit">Create ticket now</button>
+        <input ref={ticketTitleRef} placeholder="Add a title" disabled={isLoading} />
+        <textarea ref={ticketDescriptionRef} placeholder="Add a comment" disabled={isLoading} />
+        <button type="submit" disabled={isLoading} aria-busy={isLoading}>
+          Create ticket now
+        </button>
       </form>
     </article>
   );

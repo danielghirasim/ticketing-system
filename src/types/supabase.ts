@@ -14,18 +14,24 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: number
+          is_available: boolean | null
+          job_title: string | null
           supabase_user: string
         }
         Insert: {
           created_at?: string
           full_name?: string | null
           id?: number
+          is_available?: boolean | null
+          job_title?: string | null
           supabase_user: string
         }
         Update: {
           created_at?: string
           full_name?: string | null
           id?: number
+          is_available?: boolean | null
+          job_title?: string | null
           supabase_user?: string
         }
         Relationships: []
@@ -89,6 +95,8 @@ export type Database = {
       }
       tickets: {
         Row: {
+          assignee: number | null
+          assignee_name: string | null
           author_name: string | null
           created_at: string
           created_by: number
@@ -99,6 +107,8 @@ export type Database = {
           title: string
         }
         Insert: {
+          assignee?: number | null
+          assignee_name?: string | null
           author_name?: string | null
           created_at?: string
           created_by: number
@@ -109,6 +119,8 @@ export type Database = {
           title: string
         }
         Update: {
+          assignee?: number | null
+          assignee_name?: string | null
           author_name?: string | null
           created_at?: string
           created_by?: number
@@ -119,6 +131,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tickets_assignee_fkey"
+            columns: ["assignee"]
+            isOneToOne: false
+            referencedRelation: "service_users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tickets_created_by_fkey"
             columns: ["created_by"]
@@ -142,6 +161,10 @@ export type Database = {
     Functions: {
       custom_access_token_hook: {
         Args: { event: Json }
+        Returns: Json
+      }
+      get_tenant_userlist: {
+        Args: { tenant_id: string }
         Returns: Json
       }
     }

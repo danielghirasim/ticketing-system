@@ -1,15 +1,9 @@
 import { getSupabaseCookiesUtilClient } from '@/utils/supabase/cookiesUtilClient';
 import { TicketComments } from './ticket-comments';
 import classes from './ticket-details.module.css';
-import TicketDelete from './ticket-delete';
+import TicketDetails from './ticket-details';
 
-export const TICKET_STATUS = {
-  open: 'Open',
-  in_progress: 'In progress',
-  information_missing: 'Information missing',
-  canceled: 'Canceled',
-  done: 'Done',
-};
+
 
 type TicketDetailsPageProps = {
   params: { id: number; tenant: string };
@@ -49,31 +43,20 @@ export default async function TicketDetailsPage({ params }: TicketDetailsPagePro
     isAuthor = serviceUser?.id === ticket.created_by;
   }
 
-  const formattedDate = new Date(ticket.created_at).toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-
   return (
     <article className={classes.ticketDetails}>
-      <header>
-        <div className="grid">
-          <div>
-            <strong>#{ticket.id}</strong> - <strong className={classes.ticketStatusGreen}>{TICKET_STATUS[ticket.status]}</strong>
-          </div>
-          {isAuthor && <TicketDelete ticketId={ticket.id} tenant={tenant} />}
-        </div>
+      <TicketDetails
+        id={ticket.id}
+        title={ticket.title}
+        author_name={ticket.author_name}
+        created_at={ticket.created_at}
+        status={ticket.status}
+        assignee={ticket.assignee}
+        isAuthor={isAuthor}
+        tenant={tenant}
+      />
 
-        <br />
-        <small className={classes.authorAndDate}>
-          Created by <strong>{ticket.author_name}</strong> at <time>{formattedDate}</time>
-        </small>
-        <h2>{ticket.title}</h2>
-      </header>
+      <section>{ticket.description}</section>
 
       <section>{ticket.description}</section>
 

@@ -52,7 +52,7 @@ export async function TicketList({ tenant, searchParams }: TicketListProps) {
           <tr>
             <th>ID</th>
             <th>Title</th>
-            <th>Author</th>
+            <th>Asignee</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -63,7 +63,7 @@ export async function TicketList({ tenant, searchParams }: TicketListProps) {
               <td>
                 <Link href={`${urlPath(`/tickets/details/${ticket.id}`, tenant)}`}>{ticket.title}</Link>
               </td>
-              <td>{ticket.author_name}</td>
+              <td>----</td>
               <td>{ticket.status}</td>
             </tr>
           ))}

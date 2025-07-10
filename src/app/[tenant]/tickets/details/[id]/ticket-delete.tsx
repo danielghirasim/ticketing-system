@@ -15,7 +15,6 @@ export default function TicketDelete({ ticketId, tenant }: { ticketId: number; t
       .then(() => {
         router.push(urlPath('/tickets', tenant));
       });
-    console.log(`deleting ticket with: ${ticketId}`);
   }
 
   return (
